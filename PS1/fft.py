@@ -23,7 +23,7 @@ if __name__ == '__main__':
     plt.imshow(spec, cmap='gray')
     plt.show()
 
-    ran = [5, 10, 20, 256]
+    ran = [5, 10, 20, 40, 256]
     # selection matrix
     selected = np.zeros(freqImg.shape)
     for n in ran:
