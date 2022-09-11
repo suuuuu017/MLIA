@@ -3,20 +3,20 @@ import cv2
 import matplotlib.pyplot as plt
 from skimage.color import rgb2hsv, rgb2gray, rgb2yuv
 
+
+def gaussian_noise(img_gray):
+    row, col = img_gray.shape
+    mean = 0
+    var = 0.1
+    sigma = var ** 0.5
+    sigma = 0.01
+    gaussian = np.random.normal(mean, sigma, (row, col))
+    noisy_img = img_gray + gaussian
+    plt.figure()
+    plt.title('Noisy Image')
+    plt.imshow(noisy_img, cmap='gray')
+
 if __name__ == '__main__':
-    def gaussian_noise(img_gray):
-        row, col = img_gray.shape
-        mean = 0
-        var = 0.1
-        sigma = var ** 0.5
-        sigma = 0.01
-        gaussian = np.random.normal(mean, sigma, (row, col))
-        noisy_img = img_gray + gaussian
-        plt.figure()
-        plt.title('Noisy Image')
-        plt.imshow(noisy_img, cmap='gray')
-
-
     img = cv2.imread('lena.jpg')
     img_gray = rgb2gray(img)
     plt.title('Input Image')
