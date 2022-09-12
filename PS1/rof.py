@@ -101,6 +101,9 @@ if __name__ == '__main__':
 
     iter = 0
     fig, axs = plt.subplots(2,3)
+
+    gradVal = []
+    iterRec = []
     while iter < 1000:
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
@@ -112,6 +115,9 @@ if __name__ == '__main__':
         newU = u - stepSize * loss
         u = newU
         iter = iter + 1
+        gradVal.append(l)
+        iterRec.append(iter)
+
     axs[0,0].imshow(noisyImage, cmap='gray'); axs[0,0].set_title('Original Image')
     axs[0,1].imshow(u, cmap='gray'); axs[0,1].set_title('Denoised Image')
     axs[0,2].imshow(np.abs(noisyImage - u), cmap='gray'); axs[0,2].set_title('Difference')
@@ -124,4 +130,7 @@ if __name__ == '__main__':
     axs[1,2].set_title('Difference')
 
     # plt.imshow(u, cmap='gray')
+    plt.show()
+
+    plt.plot(iterRec, gradVal)
     plt.show()
