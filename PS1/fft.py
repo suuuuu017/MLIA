@@ -38,9 +38,11 @@ if __name__ == '__main__':
         # filtered freq
         # inverse shift and inverse fft
         print(selected * freqImg)
+        cleanImg = np.zeros(freqImg.shape, dtype=complex)
         cleanImg = np.fft.ifftshift(selected * freqImg)
         cleanImg = np.fft.ifft2(cleanImg)
         print(cleanImg)
+        #have to keep complex part
         cleanImg = np.real(cleanImg)
         plt.imshow(cleanImg, cmap='gray')
         plt.show()

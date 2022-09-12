@@ -8,8 +8,9 @@ from skimage.color import rgb2hsv, rgb2gray, rgb2yuv
 def gaussian_noise(img_gray):
     row, col = img_gray.shape
     mean = 0
-    var = 0.01
+    var = 0.05
     sigma = var ** 0.5
+    # sigma = 0.01
     gaussian = np.random.normal(mean, sigma, (row, col))
     noisy_img = img_gray + gaussian
     plt.figure()
@@ -26,7 +27,6 @@ def forward_difference(image):
     d[:, 0] = image[:, 0] - image[:, cols - 1];
     return d
 
-
 def backward_difference(image):
     rows, cols = image.shape
     d = np.zeros((rows, cols))
@@ -36,11 +36,16 @@ def backward_difference(image):
 
 def energy(noisy, clear, lam):
     l2 = -2 * lam * (noisy - clear)
-    print(clear)
+    # print(clear)
     # div = -1 * ((backward_difference(clear)) + (forward_difference(clear)))
     # div of dir
-    # div = -1 * (backward_difference(backward_difference(clear)) + forward_difference(forward_difference(clear)))
+    mag = np.sqrt(backward_difference(clear) ** 2 + forward_difference(clear) ** 2) + 0.0001
+    div = -1 * (backward_difference(backward_difference(clear)/ mag) + forward_difference(forward_difference(clear) / mag))
+    # print('div is')
+    # print(div)
     reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
+    # print('reg is')
+    # print(reg)
     # norm
     # dummy = ((backward_difference(clear)) + (forward_difference(clear)))
     # norm = np.sqrt(np.sum(dummy * dummy))
@@ -49,7 +54,7 @@ def energy(noisy, clear, lam):
     # print(div)
     # print(norm)
     # print(reg)
-    return l2 - reg
+    return l2 - div
 
 
 if __name__ == '__main__':
@@ -64,7 +69,7 @@ if __name__ == '__main__':
     img_gray = rgb2gray(img)
 
     noisyImage = gaussian_noise(img_gray)
-    print(noisyImage)
+    # print(noisyImage)
 
     # ## plot the image
     # plt.figure()
@@ -90,21 +95,33 @@ if __name__ == '__main__':
 
     stepSize = 0.01
 
-    lam = 0.8
+    lam = 1
 
     loss = np.ones(noisyImage.shape)
 
     iter = 0
-
-    while iter < 100:
+    fig, axs = plt.subplots(2,3)
+    while iter < 1000:
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
+        # TODO: change the criteria to not changing much
         if l < 0.001:
             break
         print(l)
+        # print("difference", np.linalg.norm(noisyImage - u))
         newU = u - stepSize * loss
         u = newU
         iter = iter + 1
+    axs[0,0].imshow(noisyImage, cmap='gray'); axs[0,0].set_title('Original Image')
+    axs[0,1].imshow(u, cmap='gray'); axs[0,1].set_title('Denoised Image')
+    axs[0,2].imshow(np.abs(noisyImage - u), cmap='gray'); axs[0,2].set_title('Difference')
 
-    plt.imshow(u, cmap='gray')
+    axs[1,0].imshow(noisyImage[0:400, 0:400], cmap='gray')
+    axs[1,0].set_title('Original Image')
+    axs[1,1].imshow(u[0:400, 0:400], cmap='gray')
+    axs[1,1].set_title('Denoised Image')
+    axs[1,2].imshow(np.abs(noisyImage - u)[0:400, 0:400], cmap='gray')
+    axs[1,2].set_title('Difference')
+
+    # plt.imshow(u, cmap='gray')
     plt.show()

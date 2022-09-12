@@ -5,7 +5,7 @@ import numpy as np
 # u  = denoised_image
 def gradient(u, u0, tau):
     du = cv2.Laplacian(u, cv2.CV_64F, ksize=3)
-    print(tau * (u - u0))
+    # print(tau * (u - u0))
     return tau * (u - u0) - 2. * du
 
 
@@ -16,7 +16,7 @@ original_image /= 255.
 
 # add gaussian noise
 mean  = 0.0
-var   = 0.01
+var   = 0.1
 sigma = var**0.5
 gaussian_noise = np.random.normal(mean, sigma, original_image.shape)
 gaussian_noise = gaussian_noise.reshape(original_image.shape)
@@ -29,7 +29,7 @@ u0 = noisy_image
 u  = denoised_image
 tau = 0.8
 eps = 0.001
-maxiters = 10
+maxiters = 10000
 for i in range(0, maxiters):
     g = gradient(u, u0, tau)
     gnorm = np.linalg.norm(g)
