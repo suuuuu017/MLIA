@@ -8,9 +8,9 @@ from skimage.color import rgb2hsv, rgb2gray, rgb2yuv
 def gaussian_noise(img_gray):
     row, col = img_gray.shape
     mean = 0
-    var = 0.05
+    var = 0.1
     sigma = var ** 0.5
-    # sigma = 0.01
+    # sigma = 0.05
     gaussian = np.random.normal(mean, sigma, (row, col))
     noisy_img = img_gray + gaussian
     plt.figure()
@@ -20,14 +20,14 @@ def gaussian_noise(img_gray):
 
     return noisy_img
 
-def forward_difference(image):
+def x_difference(image):
     rows, cols = image.shape
     d = np.zeros((rows, cols))
     d[:, 1:cols - 1] = image[:, 1:cols - 1] - image[:, 0:cols - 2];
     d[:, 0] = image[:, 0] - image[:, cols - 1];
     return d
 
-def backward_difference(image):
+def y_difference(image):
     rows, cols = image.shape
     d = np.zeros((rows, cols))
     d[1:rows - 1, :] = image[1:rows - 1, :] - image[0:rows - 2, :];
@@ -39,11 +39,19 @@ def energy(noisy, clear, lam):
     # print(clear)
     # div = -1 * ((backward_difference(clear)) + (forward_difference(clear)))
     # div of dir
-    mag = np.sqrt(backward_difference(clear) ** 2 + forward_difference(clear) ** 2) + 0.0001
-    div = -1 * (backward_difference(backward_difference(clear)/ mag) + forward_difference(forward_difference(clear) / mag))
-    # print('div is')
-    # print(div)
-    reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
+    # mag = np.sqrt(backward_difference(clear) ** 2 + forward_difference(clear) ** 2 + 0.0001)
+    # magg = np.sqrt(np.sum(backward_difference(clear) ** 2 + forward_difference(clear) ** 2) + 0.0001)
+    magx = np.sqrt(np.sum(x_difference(clear) ** 2) + 0.0001)
+    magy = np.sqrt(np.sum(y_difference(clear) ** 2) + 0.0001)
+    # magx = np.linalg.norm(x_difference(clear)) + 0.0001
+    # print(magx)
+    # magy = np.linalg.norm(y_difference(clear)) + 0.0001
+    # div = -1 * (backward_difference(clear) / mag + forward_difference(clear) / mag)
+    # div2 = -1 * (backward_difference(clear) / magx + forward_difference(clear) / magy)
+    div3 = -1 * (x_difference(x_difference(clear)/ magx) + y_difference(y_difference(clear)/ magy))
+    div3 = -1 * (x_difference(x_difference(clear) / magx) + y_difference(y_difference(clear) / magy))
+    return l2 + div3
+    # reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
     # print('reg is')
     # print(reg)
     # norm
@@ -54,8 +62,10 @@ def energy(noisy, clear, lam):
     # print(div)
     # print(norm)
     # print(reg)
-    return l2 - div
-
+    # return l2 - reg
+    # return l2 + div
+    # return l2 + div3
+    # return l2 - div
 
 if __name__ == '__main__':
     # img = cv2.imread('lena.jpg')
@@ -93,22 +103,25 @@ if __name__ == '__main__':
 
     u = noisyImage.copy()
 
-    stepSize = 0.01
+    stepSize = 0.001
 
-    lam = 1
+    lam = 2
 
     loss = np.ones(noisyImage.shape)
+    l = 10000000
 
     iter = 0
-    fig, axs = plt.subplots(2,3)
+    fig, axs = plt.subplots(2,4)
 
     gradVal = []
     iterRec = []
+    # oldL = 0
     while iter < 1000:
+        # oldL = l
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
         # TODO: change the criteria to not changing much
-        if l < 0.001:
+        if l < 0.01:
             break
         print(l)
         # print("difference", np.linalg.norm(noisyImage - u))
@@ -121,6 +134,7 @@ if __name__ == '__main__':
     axs[0,0].imshow(noisyImage, cmap='gray'); axs[0,0].set_title('Original Image')
     axs[0,1].imshow(u, cmap='gray'); axs[0,1].set_title('Denoised Image')
     axs[0,2].imshow(np.abs(noisyImage - u), cmap='gray'); axs[0,2].set_title('Difference')
+    axs[0,3].imshow(np.abs(noisyImage - img_gray), cmap='gray'); axs[0, 3].set_title('Noise')
 
     axs[1,0].imshow(noisyImage[0:400, 0:400], cmap='gray')
     axs[1,0].set_title('Original Image')
@@ -128,6 +142,8 @@ if __name__ == '__main__':
     axs[1,1].set_title('Denoised Image')
     axs[1,2].imshow(np.abs(noisyImage - u)[0:400, 0:400], cmap='gray')
     axs[1,2].set_title('Difference')
+    axs[1,3].imshow(np.abs(noisyImage - img_gray)[0:400, 0:400], cmap='gray')
+    axs[1,3].set_title('Noise')
 
     # plt.imshow(u, cmap='gray')
     plt.show()
