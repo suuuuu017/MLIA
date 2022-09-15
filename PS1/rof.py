@@ -36,70 +36,19 @@ def y_difference(image):
 
 def energy(noisy, clear, lam):
     l2 = -2 * lam * (noisy - clear)
-    # print(clear)
-    # div = -1 * ((backward_difference(clear)) + (forward_difference(clear)))
-    # div of dir
-    # mag = np.sqrt(backward_difference(clear) ** 2 + forward_difference(clear) ** 2 + 0.0001)
-    # magg = np.sqrt(np.sum(backward_difference(clear) ** 2 + forward_difference(clear) ** 2) + 0.0001)
     magx = np.sqrt(np.sum(x_difference(clear) ** 2) + 0.0001)
     magy = np.sqrt(np.sum(y_difference(clear) ** 2) + 0.0001)
-    # magx = np.linalg.norm(x_difference(clear)) + 0.0001
-    # print(magx)
-    # magy = np.linalg.norm(y_difference(clear)) + 0.0001
-    # div = -1 * (backward_difference(clear) / mag + forward_difference(clear) / mag)
-    # div2 = -1 * (backward_difference(clear) / magx + forward_difference(clear) / magy)
     div3 = -1 * (x_difference(x_difference(clear)/ magx) + y_difference(y_difference(clear)/ magy))
     div3 = -1 * (x_difference(x_difference(clear) / magx) + y_difference(y_difference(clear) / magy))
     return l2 + div3
-    # reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
-    # print('reg is')
-    # print(reg)
-    # norm
-    # dummy = ((backward_difference(clear)) + (forward_difference(clear)))
-    # norm = np.sqrt(np.sum(dummy * dummy))
-    # print(dummy)
-    # div = div / norm
-    # print(div)
-    # print(norm)
-    # print(reg)
-    # return l2 - reg
-    # return l2 + div
-    # return l2 + div3
-    # return l2 - div
 
 if __name__ == '__main__':
-    # img = cv2.imread('lena.jpg')
-    # img_gray = rgb2gray(img)
-    # plt.title('Input Image')
-    # plt.imshow(img, cmap='gray')
-    # plt.show()
 
     ## read image
     img = cv2.imread('lena.jpg')
     img_gray = rgb2gray(img)
 
     noisyImage = gaussian_noise(img_gray)
-    # print(noisyImage)
-
-    # ## plot the image
-    # plt.figure()
-    # plt.title('Input Image')
-    # plt.imshow(img_gray, cmap='gray')
-    # plt.show()
-    #
-    # ## calculate forward difference and plot
-    # forward_diff_img = forward_difference(img_gray)
-    # plt.figure()
-    # plt.title('Forward Difference')
-    # plt.imshow(forward_diff_img, cmap='gray')
-    # plt.show()
-    #
-    # ## calculate backward difference and plot
-    # backward_diff_img = backward_difference(img_gray)
-    # plt.figure()
-    # plt.title('Backward Difference')
-    # plt.imshow(backward_diff_img, cmap='gray')
-    # plt.show()
 
     u = noisyImage.copy()
 
