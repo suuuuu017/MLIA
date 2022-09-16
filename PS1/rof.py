@@ -10,7 +10,7 @@ def gaussian_noise(img_gray):
     mean = 0
     var = 0.1
     sigma = var ** 0.5
-    # sigma = 0.01
+    sigma = 0.05
     gaussian = np.random.normal(mean, sigma, (row, col))
     noisy_img = img_gray + gaussian
     plt.figure()
@@ -36,26 +36,19 @@ def y_difference(image):
 
 def energy(noisy, clear, lam):
     l2 = -2 * lam * (noisy - clear)
-    # magx = np.sqrt(np.sum(np.square(x_difference(clear))))
-    # magy = np.sqrt(np.sum(np.square(y_difference(clear))))
-    # mag = np.sqrt(x_difference(clear) ** 2 + y_difference(clear) ** 2) + 0.0001
     magx = LA.norm(x_difference(clear)) + 0.00001
     magy = LA.norm(y_difference(clear)) + 0.00001
-    # div =  (x_difference(clear) / mag + y_difference(clear) / mag)
-    # div4 =-1 * (x_difference(div) + y_difference(div))
-    # div2 = -1 * (x_difference(clear) / magx + y_difference(clear) / magy)
-    # div3 = -1 * (x_difference(x_difference(clear) / magx) + y_difference(y_difference(clear) / magy))
-    # innerPart = (x_difference(clear) + y_difference(clear)) / (magx + magy + 0.0001)
-    innerPart = (x_difference(clear) / magx + y_difference(clear) / magy)
-    div3 = -1 * (x_difference(innerPart) + y_difference(innerPart))
-    print('div3 is', div3)
-    # div3 = -1 * (x_difference(x_difference(clear)/ magx) + y_difference(y_difference(clear)/ magy))
-    # return l2 + div3
-
+    devX = x_difference(clear)
+    devY = y_difference(clear)
+    div = -1 * (x_difference(devX) + y_difference(devY))
+    # div = -1 * (x_difference(devX / magx) + y_difference(devY / magy))
+    # print(div)
     reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
-    print("reg is ", reg)
+    # print("reg is ", reg)
 
-    return l2 - reg
+    return l2 - div
+
+    # return l2 - reg
 
 if __name__ == '__main__':
 
@@ -69,7 +62,7 @@ if __name__ == '__main__':
 
     stepSize = 0.1
 
-    lam = 0.05
+    lam = 1
 
     loss = np.ones(noisyImage.shape)
     l = 10000000
@@ -80,12 +73,12 @@ if __name__ == '__main__':
     gradVal = []
     iterRec = []
     # oldL = 0
-    while iter < 6:
+    while iter < 1000:
         # oldL = l
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
         # TODO: change the criteria to not changing much
-        if l < 0.0001:
+        if l < 0.001:
             break
         print(l)
         # print("difference", np.linalg.norm(noisyImage - u))
