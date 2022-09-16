@@ -36,17 +36,22 @@ def y_difference(image):
 
 def energy(noisy, clear, lam):
     l2 = -2 * lam * (noisy - clear)
-    magx = LA.norm(x_difference(clear)) + 0.00001
-    magy = LA.norm(y_difference(clear)) + 0.00001
+    sqrX = np.square(x_difference(clear))
+    sqrY = np.square(y_difference(clear))
     devX = x_difference(clear)
     devY = y_difference(clear)
-    div = -1 * (x_difference(devX) + y_difference(devY))
-    # div = -1 * (x_difference(devX / magx) + y_difference(devY / magy))
+    mag = np.sqrt(sqrX + sqrY)
+    mag = mag + 0.0000000001
+    # div = -1 * (x_difference(devX) + y_difference(devY))
+    # print(mag)
+    div = -1 * (x_difference(devX / mag) + y_difference(devY / mag))
+    # print(mag)
+    # div = -1 * (x_difference(devX / mag) + y_difference(devY / mag))
     # print(div)
-    reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
+    # reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
     # print("reg is ", reg)
 
-    return l2 - div
+    return l2 + div
 
     # return l2 - reg
 
@@ -60,25 +65,27 @@ if __name__ == '__main__':
 
     u = noisyImage.copy()
 
-    stepSize = 0.1
+    stepSize = 0.5
 
-    lam = 1
+    lam = 0.8
+
+    # h = 1
 
     loss = np.ones(noisyImage.shape)
     l = 10000000
 
     iter = 0
-    fig, axs = plt.subplots(2,4)
+    fig, axs = plt.subplots(1, 2)
 
     gradVal = []
     iterRec = []
     # oldL = 0
-    while iter < 1000:
+    while iter < 2000:
         # oldL = l
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
         # TODO: change the criteria to not changing much
-        if l < 0.001:
+        if l < 0.00001:
             break
         print(l)
         # print("difference", np.linalg.norm(noisyImage - u))
@@ -88,19 +95,19 @@ if __name__ == '__main__':
         gradVal.append(l)
         iterRec.append(iter)
 
-    axs[0,0].imshow(noisyImage, cmap='gray'); axs[0,0].set_title('Original Image')
-    axs[0,1].imshow(u, cmap='gray'); axs[0,1].set_title('Denoised Image')
-    axs[0,2].imshow(np.abs(noisyImage - u), cmap='gray'); axs[0,2].set_title('Difference')
-    axs[0,3].imshow(np.abs(noisyImage - img_gray), cmap='gray'); axs[0, 3].set_title('Noise')
-
-    axs[1,0].imshow(noisyImage[0:400, 0:400], cmap='gray')
-    axs[1,0].set_title('Original Image')
-    axs[1,1].imshow(u[0:400, 0:400], cmap='gray')
-    axs[1,1].set_title('Denoised Image')
-    axs[1,2].imshow(np.abs(noisyImage - u)[0:400, 0:400], cmap='gray')
-    axs[1,2].set_title('Difference')
-    axs[1,3].imshow(np.abs(noisyImage - img_gray)[0:400, 0:400], cmap='gray')
-    axs[1,3].set_title('Noise')
+    axs[0].imshow(noisyImage, cmap='gray'); axs[0].set_title('Original Image')
+    axs[1].imshow(u, cmap='gray'); axs[1].set_title('Denoised Image')
+    # axs[0,2].imshow(np.abs(noisyImage - u), cmap='gray'); axs[0,2].set_title('Difference')
+    # axs[0,3].imshow(np.abs(noisyImage - img_gray), cmap='gray'); axs[0, 3].set_title('Noise')
+    #
+    # axs[1,0].imshow(noisyImage[0:400, 0:400], cmap='gray')
+    # axs[1,0].set_title('Original Image')
+    # axs[1,1].imshow(u[0:400, 0:400], cmap='gray')
+    # axs[1,1].set_title('Denoised Image')
+    # axs[1,2].imshow(np.abs(noisyImage - u)[0:400, 0:400], cmap='gray')
+    # axs[1,2].set_title('Difference')
+    # axs[1,3].imshow(np.abs(noisyImage - img_gray)[0:400, 0:400] - 1, cmap='gray')
+    # axs[1,3].set_title('Noise')
 
     # plt.imshow(u, cmap='gray')
     plt.show()
