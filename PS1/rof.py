@@ -10,7 +10,7 @@ def gaussian_noise(img_gray):
     mean = 0
     var = 0.1
     sigma = var ** 0.5
-    # sigma = 0.05
+    # sigma = 0.01
     gaussian = np.random.normal(mean, sigma, (row, col))
     noisy_img = img_gray + gaussian
     plt.figure()
@@ -22,25 +22,40 @@ def gaussian_noise(img_gray):
 
 def x_difference(image):
     rows, cols = image.shape
-    d = np.zeros((rows, cols))
-    d[:, 1:cols - 1] = image[:, 1:cols - 1] - image[:, 0:cols - 2];
-    d[:, 0] = image[:, 0] - image[:, cols - 1];
+    d = np.zeros((rows,cols))
+    d[:,1:cols-1] = image[:,1:cols-1] - image[:,0:cols-2];
+    d[:,0] = image[:,0] - image[:,cols-1];
     return d
 
 def y_difference(image):
     rows, cols = image.shape
-    d = np.zeros((rows, cols))
-    d[1:rows - 1, :] = image[1:rows - 1, :] - image[0:rows - 2, :];
-    d[0, :] = image[0, :] - image[rows - 1, :];
+    d = np.zeros((rows,cols))
+    d[1:rows-1, :] = image[1:rows-1, :] - image[0:rows-2, :];
+    d[0,:] = image[0,:] - image[rows-1,:];
     return d
 
 def energy(noisy, clear, lam):
     l2 = -2 * lam * (noisy - clear)
-    magx = np.sqrt(np.sum(x_difference(clear) ** 2) + 0.0001)
-    magy = np.sqrt(np.sum(y_difference(clear) ** 2) + 0.0001)
-    div3 = -1 * (x_difference(x_difference(clear)/ magx) + y_difference(y_difference(clear)/ magy))
-    div3 = -1 * (x_difference(x_difference(clear) / magx) + y_difference(y_difference(clear) / magy))
-    return l2 + div3
+    # magx = np.sqrt(np.sum(np.square(x_difference(clear))))
+    # magy = np.sqrt(np.sum(np.square(y_difference(clear))))
+    # mag = np.sqrt(x_difference(clear) ** 2 + y_difference(clear) ** 2) + 0.0001
+    magx = LA.norm(x_difference(clear)) + 0.00001
+    magy = LA.norm(y_difference(clear)) + 0.00001
+    # div =  (x_difference(clear) / mag + y_difference(clear) / mag)
+    # div4 =-1 * (x_difference(div) + y_difference(div))
+    # div2 = -1 * (x_difference(clear) / magx + y_difference(clear) / magy)
+    # div3 = -1 * (x_difference(x_difference(clear) / magx) + y_difference(y_difference(clear) / magy))
+    # innerPart = (x_difference(clear) + y_difference(clear)) / (magx + magy + 0.0001)
+    innerPart = (x_difference(clear) / magx + y_difference(clear) / magy)
+    div3 = -1 * (x_difference(innerPart) + y_difference(innerPart))
+    print('div3 is', div3)
+    # div3 = -1 * (x_difference(x_difference(clear)/ magx) + y_difference(y_difference(clear)/ magy))
+    # return l2 + div3
+
+    reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
+    print("reg is ", reg)
+
+    return l2 - reg
 
 if __name__ == '__main__':
 
@@ -52,9 +67,9 @@ if __name__ == '__main__':
 
     u = noisyImage.copy()
 
-    stepSize = 0.001
+    stepSize = 0.1
 
-    lam = 2
+    lam = 0.05
 
     loss = np.ones(noisyImage.shape)
     l = 10000000
@@ -65,12 +80,12 @@ if __name__ == '__main__':
     gradVal = []
     iterRec = []
     # oldL = 0
-    while iter < 1000:
+    while iter < 6:
         # oldL = l
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
         # TODO: change the criteria to not changing much
-        if l < 0.01:
+        if l < 0.0001:
             break
         print(l)
         # print("difference", np.linalg.norm(noisyImage - u))
