@@ -42,17 +42,9 @@ def energy(noisy, clear, lam):
     devY = y_difference(clear)
     mag = np.sqrt(sqrX + sqrY)
     mag = mag + 0.0000000001
-    # div = -1 * (x_difference(devX) + y_difference(devY))
-    # print(mag)
-    div = -1 * (x_difference(devX / mag) + y_difference(devY / mag))
-    # print(mag)
-    # div = -1 * (x_difference(devX / mag) + y_difference(devY / mag))
-    # print(div)
+    div = x_difference(devX / mag) + y_difference(devY / mag)
     # reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
-    # print("reg is ", reg)
-
-    return l2 + div
-
+    return l2 - div
     # return l2 - reg
 
 if __name__ == '__main__':
@@ -65,9 +57,9 @@ if __name__ == '__main__':
 
     u = noisyImage.copy()
 
-    stepSize = 0.5
+    stepSize = 0.1
 
-    lam = 0.8
+    lam = 1
 
     # h = 1
 
@@ -79,9 +71,9 @@ if __name__ == '__main__':
 
     gradVal = []
     iterRec = []
-    # oldL = 0
-    while iter < 2000:
-        # oldL = l
+    oldL = 0
+    while iter < 500:
+        oldL = l
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
         # TODO: change the criteria to not changing much
