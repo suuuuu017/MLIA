@@ -43,9 +43,7 @@ def energy(noisy, clear, lam):
     mag = np.sqrt(sqrX + sqrY)
     mag = mag + 0.0000000001
     div = x_difference(devX / mag) + y_difference(devY / mag)
-    # reg = cv2.Laplacian(clear, cv2.CV_64F, ksize=3)
     return l2 - div
-    # return l2 - reg
 
 if __name__ == '__main__':
 
@@ -59,7 +57,7 @@ if __name__ == '__main__':
 
     stepSize = 0.1
 
-    lam = 1
+    lam = 2
 
     # h = 1
 
@@ -77,7 +75,7 @@ if __name__ == '__main__':
         loss = energy(noisyImage, u, lam)
         l = np.linalg.norm(loss)
         # TODO: change the criteria to not changing much
-        if l < 0.00001:
+        if np.abs(oldL - l) < 0.001:
             break
         print(l)
         # print("difference", np.linalg.norm(noisyImage - u))
@@ -89,19 +87,6 @@ if __name__ == '__main__':
 
     axs[0].imshow(noisyImage, cmap='gray'); axs[0].set_title('Original Image')
     axs[1].imshow(u, cmap='gray'); axs[1].set_title('Denoised Image')
-    # axs[0,2].imshow(np.abs(noisyImage - u), cmap='gray'); axs[0,2].set_title('Difference')
-    # axs[0,3].imshow(np.abs(noisyImage - img_gray), cmap='gray'); axs[0, 3].set_title('Noise')
-    #
-    # axs[1,0].imshow(noisyImage[0:400, 0:400], cmap='gray')
-    # axs[1,0].set_title('Original Image')
-    # axs[1,1].imshow(u[0:400, 0:400], cmap='gray')
-    # axs[1,1].set_title('Denoised Image')
-    # axs[1,2].imshow(np.abs(noisyImage - u)[0:400, 0:400], cmap='gray')
-    # axs[1,2].set_title('Difference')
-    # axs[1,3].imshow(np.abs(noisyImage - img_gray)[0:400, 0:400] - 1, cmap='gray')
-    # axs[1,3].set_title('Noise')
-
-    # plt.imshow(u, cmap='gray')
     plt.show()
 
     plt.plot(iterRec, gradVal)
