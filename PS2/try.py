@@ -1,7 +1,8 @@
 import numpy as np
+from scipy import ndimage
 
 if __name__ == '__main__':
-    a = np.array([[1,2,3], [4,5,6]])
-    print(a)
-    print(a.transpose())
-    print(a.transpose().mean(1).transpose())
+    a = np.arange(12.).reshape((4, 3))
+    b = ndimage.map_coordinates(a, [[[0.5, 2, 1], [0.5, 2, 1], [0.5, 2, 1]],
+                                    [[0.5, 1, 1], [0.5, 1, 1], [0.5, 1, 1]]], order=3)
+    print(b)

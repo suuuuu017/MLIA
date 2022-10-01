@@ -18,6 +18,7 @@ if __name__ == '__main__':
     # cov = np.cov(adjImg)
     cov = np.dot(adjImg, adjImg.transpose()) / 470.0
     # print(cov.shape)
+    # TODO: eig or svd
     w, v = eig(cov)
     print('E-value:', w.real)
     maxIndex = np.where(w.real == max(w.real))
