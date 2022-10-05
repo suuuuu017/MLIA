@@ -19,7 +19,6 @@ def x_difference(image):
     d2[:,0:cols-2] = image[:, 0:cols-2] - image[:, 1:cols-1]
     d2[:, cols-1] = image[:, cols-1] - image[:,0]
 
-    #TODO: check if /2 if correct
     d = (d1 + d2) / 2
 
     return d
@@ -44,18 +43,19 @@ def jacobian(vx, vy):
     topright = y_difference(vx)
     bottomleft = x_difference(vy)
     bottomright = y_difference(vy)
-    top = np.concatenate((topleft, topright), axis = 1)
-    bottom = np.concatenate((bottomleft, bottomright), axis = 1)
-    dv = np.concatenate((top, bottom), axis = 0)
-    dvt = dv.transpose()
+    # top = np.concatenate((topleft, topright), axis = 1)
+    # bottom = np.concatenate((bottomleft, bottomright), axis = 1)
+    # dv = np.concatenate((top, bottom), axis = 0)
+    # dvt = dv.transpose()
+    dvxt = np.multiply(topleft, vx) + np.multiply(bottomleft, vy)
+    dvyt = np.multiply(topright, vx) + np.multiply(bottomright, vy)
 
-    return dvt
+    return dvxt, dvyt
 
 def div(vx, vy):
     top = x_difference(np.multiply(vx, vx)) + x_difference(np.multiply(vx, vy))
     bottom = y_difference(np.multiply(vy, vx)) + y_difference((np.multiply(vy, vy)))
-    divM = np.concatenate((top, bottom), axis = 0)
-    return divM
+    return top, bottom
 
 if __name__ == '__main__':
     velocity = sitk.GetArrayFromImage(sitk.ReadImage('code+data_Q3/data/initialV/v0Spatial.mhd'))
@@ -65,8 +65,8 @@ if __name__ == '__main__':
     vy0 = velocity[0][:, :, 1]
     source = source[0]
     # print("source shape is", source.shape)
-    # plt.imshow(vx0, cmap='gray')
-    # plt.show()
+    plt.imshow(vx0, cmap='gray')
+    plt.show()
     # print(vx0)
 
     iter = 0
@@ -74,13 +74,17 @@ if __name__ == '__main__':
     vx = vx0
     vy = vy0
 
-    phi = np.arange(10000.).reshape((100, 100))
+    # phix = np.arange(10000.).reshape((100, 100))
+    # phi = source
+    phi = np.mgrid[0:100, 0:100]
+    phix = phi[0]
+    phiy = phi[1]
 
-    stepSize = 0.01
+    stepSize = 0.25
 
     selected = np.zeros((100, 100))
 
-    while iter < 100:
+    while iter < 4:
         iter = iter + 1
         #TODO: add smoothing K
         # print(jacobian(vx, vy).shape)
@@ -88,7 +92,7 @@ if __name__ == '__main__':
         #TODO: dot product
         selected[100 // 2 - 8: 100 // 2 + 8, 100 // 2 - 8: 100 // 2 + 8] = 1
 
-        dvdt = -1 * (np.dot(jacobian(vx, vy), np.concatenate((vx, vy), axis=0)) + div(vx, vy))
+        # dvdt = float(-1.0) * (jacobian(vx, vy) + div(vx, vy))
         # with np.printoptions(threshold=np.inf):
         #     print(dvdt)
         # plt.imshow(dvdt, cmap='gray')
@@ -96,63 +100,112 @@ if __name__ == '__main__':
 
         # plt.imshow(np.concatenate((vx, vy), axis=0), cmap='gray')
         # plt.show()
-
-        dvxdt = dvdt[0:100, :]
-        dvydt = dvdt[100:200, :]
+        dvxt, dvyt = jacobian(vx, vy)
+        top, bottom = div(vx, vy)
+        print("dvxt is", dvxt)
+        print(top)
+        dvxdt = (dvxt + top)
+        dvydt = (dvyt + bottom)
         # with np.printoptions(threshold=np.inf):
-        #     print(dvxdt)
-        # plt.imshow(dvxdt, cmap='gray')
-        # plt.show()
+        #     print(jacobian(vx, vy))
 
-        filteredSpec = selected * dvxdt
-        freqImg = np.fft.fft2(filteredSpec)
-        freqImg = np.fft.fftshift(filteredSpec)
+        print("shape of dvxdt is ", dvxdt.shape)
+
+        plt.imshow(dvxdt, cmap='gray')
+        plt.show()
+
+        freqImg = np.fft.fft2(dvxdt)
+        freqImg = np.fft.fftshift(freqImg)
         cleanImg = np.fft.ifftshift(selected * freqImg)
         cleanImg = np.fft.ifft2(cleanImg)
         dvxdt = np.real(cleanImg)
+        dvxdt = -1 * dvxdt
 
-        filteredSpec = selected * dvydt
-        freqImg = np.fft.fft2(filteredSpec)
-        freqImg = np.fft.fftshift(filteredSpec)
+
+        freqImg = np.fft.fft2(dvydt)
+        freqImg = np.fft.fftshift(freqImg)
         cleanImg = np.fft.ifftshift(selected * freqImg)
         cleanImg = np.fft.ifft2(cleanImg)
         dvydt = np.real(cleanImg)
+        dvydt = -1 * dvydt
 
         # print(dvydt)
 
-        dphidt = ndimage.map_coordinates(phi, [vx, vy], order=3)
+        plt.imshow(dvxdt, cmap='gray')
+        plt.show()
+
+
+        # v = np.concatenate((vx, vy), axis=0)
+
         # with np.printoptions(threshold=np.inf):
         #     print(phi)
 
         vx = dvxdt * stepSize + vx
         vy = dvydt * stepSize + vy
 
+        # dphidt = ndimage.map_coordinates(phi, [vx, vy], order=3)
+
+        # dphixdt = ndimage.map_coordinates(phix, [vx, vy], order=3)
+        # dphiydt = ndimage.map_coordinates(phiy, [vx, vy], order=3)
+
+        dphixdt = ndimage.map_coordinates(vx, phi, order=3)
+        dphiydt = ndimage.map_coordinates(vy, phi, order=3)
+
+        plt.imshow(dphixdt, cmap='gray')
+        plt.show()
+
+
         # print("dpidt size is ", dphidt.shape)
         # print("phi size is ", phi.shape)
 
-        phi = dphidt * stepSize + phi
-        ndimage.map_coordinates(phi, [vx, vy], order=3)
+        phix = dphixdt * stepSize + phix
+        phiy = dphiydt * stepSize + phiy
+        # ndimage.map_coordinates(phi, [vx, vy], order=3)
+
+        # plt.imshow(dvdt, cmap='gray')
+        # plt.show()
+        # plt.imshow(dvxdt, cmap='gray')
+        # plt.show()
+        # plt.imshow(dvydt, cmap='gray')
+        # plt.show()
 
     fig, axs = plt.subplots(1, 3)
     print(phi.shape)
     axs[0].imshow(source, cmap='gray')
-    axs[1].imshow(np.rint(phi), cmap='gray')
+    # axs[1].imshow(source - phi, cmap='gray')
 
-    newimg = np.zeros((100, 100))
+    # newimg = np.zeros((100, 100))
+    #
+    # for x in range(100):
+    #     for y in range(100):
+    #         # newCoor = int(phi[x][y])
+    #         # print(newCoor)
+    #         newX = phix[x][y]
+    #         newY = phiy[x][y]
+    #         # if newX>=100:
+    #         #     newX = 99
+    #         # if newY>=100:
+    #         #     newY = 99
+    #         newimg[newX][newY] = source[x][y]
 
-    for x in range(100):
-        for y in range(100):
-            newCoor = int(phi[x][y])
-            # print(newCoor)
-            newX = newCoor//100
-            newY = newCoor%100
-            if newX>=100:
-                newX = 99
-            if newY>=100:
-                newY = 99
-            newimg[newX][newY] = source[x][y]
 
-    axs[2].imshow(newimg, cmap='gray')
+    newimg = ndimage.map_coordinates(source, [phix, phiy], order=3)
+
+    # for x in range(100):
+    #     for y in range(100):
+    #         # newCoor = int(phi[x][y])
+    #         # print(newCoor)
+    #         newX = phix[x][y]
+    #         newY = phiy[x][y]
+    #         # if newX>=100:
+    #         #     newX = 99
+    #         # if newY>=100:
+    #         #     newY = 99
+    #         print(newX, newY)
+    #         newimg[int(newX)][int(newY)] = source[x][y]
+    axs[1].imshow(newimg, cmap='gray')
+    # axs[1].imshow(phix, cmap='gray')
+    axs[2].imshow(source - newimg, cmap='gray')
     plt.show()
 
 
