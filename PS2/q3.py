@@ -10,33 +10,39 @@ from scipy import ndimage
 def x_difference(image):
     rows, cols = image.shape
     d = np.zeros((rows, cols))
+    d[:, 1:cols - 2] = image[:, 2:cols-1] - image[:, 0:cols-3]
+    d[:, 0] = image[:, 0]
+    d[:, cols-1] = image[:, cols-1]
 
-    d1 = np.zeros((rows,cols))
-    d1[:,1:cols-1] = image[:,1:cols-1] - image[:,0:cols-2]
-    d1[:,0] = image[:,0] - image[:,cols-1]
+    # d1 = np.zeros((rows,cols))
+    # d1[:,1:cols-1] = image[:,1:cols-1] - image[:,0:cols-2]
+    # d1[:,0] = image[:,0] - image[:,cols-1]
+    #
+    # d2 = np.zeros((rows,cols))
+    # d2[:,0:cols-2] = image[:, 0:cols-2] - image[:, 1:cols-1]
+    # d2[:, cols-1] = image[:, cols-1] - image[:,0]
+    #
+    # d = (d1 + d2) / 2
 
-    d2 = np.zeros((rows,cols))
-    d2[:,0:cols-2] = image[:, 0:cols-2] - image[:, 1:cols-1]
-    d2[:, cols-1] = image[:, cols-1] - image[:,0]
-
-    d = (d1 + d2) / 2
-
-    return d
+    return d/2
 
 def y_difference(image):
     rows, cols = image.shape
     d = np.zeros((rows,cols))
+    d[1:(rows - 2), :] = image[2:(rows-1), :] - image[0:(rows-3), :]
+    d[0, :] = image[0, :]
+    d[rows-1, :] = image[rows-1, :]
 
-    d1 = np.zeros((rows,cols))
-    d1[1:rows-1, :] = image[1:rows-1, :] - image[0:rows-2, :]
-    d1[0,:] = image[0,:] - image[rows-1,:]
-
-    d2 = np.zeros((rows, cols))
-    d2[0:rows-2, :] = image[0:rows-2, :] - image[1:rows-1, :]
-    d2[rows-1, :] = image[rows-1, :] - image[0, :]
-
-    d = (d1 + d2) / 2
-    return d
+    # d1 = np.zeros((rows,cols))
+    # d1[1:rows-1, :] = image[1:rows-1, :] - image[0:rows-2, :]
+    # d1[0,:] = image[0,:] - image[rows-1,:]
+    #
+    # d2 = np.zeros((rows, cols))
+    # d2[0:rows-2, :] = image[0:rows-2, :] - image[1:rows-1, :]
+    # d2[rows-1, :] = image[rows-1, :] - image[0, :]
+    #
+    # d = (d1 + d2) / 2
+    return d/2
 
 def jacobian(vx, vy):
     topleft = x_difference(vx)

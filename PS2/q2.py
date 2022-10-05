@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import eig
 from scipy import io
 import numpy as np
-from numpy.linalg import eig
+from numpy.linalg import svd
 from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
@@ -20,14 +20,16 @@ if __name__ == '__main__':
     cov = np.dot(adjImg, adjImg.transpose()) / 470.0
     # print(cov.shape)
     # TODO: eig or svd
-    w, v = eig(cov)
-    print('E-value:', w.real)
-    maxIndex = np.where(w.real == max(w.real))
-    print(max(w.real))
-    print(maxIndex)
+    _, w, v = svd(cov)
+    print('E-value:', w**2)
+    # maxIndex = np.where(w.real == max(w.real))
+    # print(max(w.real))
+    # print(maxIndex)
     # print('E-vector', v.real.shape)
-    v = v.real.transpose()
+    v = v.real
     print(type(v[0]))
+    for i in range(10):
+        print(type(w[i]))
 
     fig, axs = plt.subplots(1, 10)
     for i in range(10):
