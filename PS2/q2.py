@@ -15,6 +15,7 @@ if __name__ == '__main__':
     # plt.show()
     adjImg = image - data['trainX'].mean(1)
     # print(adjImg[0][461])
+    # TODO: check np.cov
     # cov = np.cov(adjImg)
     cov = np.dot(adjImg, adjImg.transpose()) / 470.0
     # print(cov.shape)
@@ -27,5 +28,9 @@ if __name__ == '__main__':
     # print('E-vector', v.real.shape)
     v = v.real.transpose()
     print(type(v[0]))
-    plt.imshow(v[2].reshape((28,28)), cmap='gray')
+
+    fig, axs = plt.subplots(1, 10)
+    for i in range(10):
+        axs[i].imshow(v[i].reshape((28,28)), cmap='gray')
+    # plt.imshow(v[0].reshape((28,28)), cmap='gray')
     plt.show()

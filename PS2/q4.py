@@ -57,6 +57,12 @@ def div(vx, vy):
     bottom = y_difference(np.multiply(vy, vx)) + y_difference((np.multiply(vy, vy)))
     return top, bottom
 
+def getdphi(vx, vy, phix, phiy):
+    dphixdt = np.multiply(x_difference(phix), vx) + np.multiply(y_difference(phix), vy)
+    dphiydt = np.multiply(x_difference(phiy), vx) + np.multiply(y_difference(phiy), vy)
+    return -1 * dphixdt, -1 * dphiydt
+
+
 if __name__ == '__main__':
     velocity = sitk.GetArrayFromImage(sitk.ReadImage('code+data_Q3/data/initialV/v0Spatial.mhd'))
     source = sitk.GetArrayFromImage(sitk.ReadImage('code+data_Q3/data/sourceImage/source.mhd'))
@@ -119,7 +125,7 @@ if __name__ == '__main__':
         cleanImg = np.fft.ifftshift(selected * freqImg)
         cleanImg = np.fft.ifft2(cleanImg)
         dvxdt = np.real(cleanImg)
-        dvxdt = -1 * dvxdt
+        dvxdt = 1 * dvxdt
 
 
         freqImg = np.fft.fft2(dvydt)
@@ -127,7 +133,7 @@ if __name__ == '__main__':
         cleanImg = np.fft.ifftshift(selected * freqImg)
         cleanImg = np.fft.ifft2(cleanImg)
         dvydt = np.real(cleanImg)
-        dvydt = -1 * dvydt
+        dvydt = 1 * dvydt
 
         # print(dvydt)
 
@@ -148,8 +154,7 @@ if __name__ == '__main__':
         # dphixdt = ndimage.map_coordinates(phix, [vx, vy], order=3)
         # dphiydt = ndimage.map_coordinates(phiy, [vx, vy], order=3)
         # TODO: vx phi, phi, vxvy
-        dphixdt = ndimage.map_coordinates(vx, phi, order=3)
-        dphiydt = ndimage.map_coordinates(vy, phi, order=3)
+        dphixdt, dphiydt = getdphi(vx, vy, phix, phiy)
 
         plt.imshow(dphixdt, cmap='gray')
         plt.show()
