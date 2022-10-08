@@ -2,37 +2,29 @@ import numpy as np
 from numpy.linalg import eig
 from scipy import io
 import numpy as np
-from numpy.linalg import svd
+from numpy.linalg import svd, eig
 from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
     data = io.loadmat('MINIST_Q2/mnist.mat')
-    # print(data['trainX'][0][461])
-    image = data['trainX'].transpose()
-    # print(data['trainX'].mean(0)[461])
-    # print(data['trainX'] - data['trainX'].mean(0))
-    # plt.imshow(image[:][0].reshape((28, 28)), cmap='gray')
-    # plt.show()
-    adjImg = image - data['trainX'].mean(1)
-    # print(adjImg[0][461])
-    # TODO: check np.cov
-    # cov = np.cov(adjImg)
+    image = data['trainX']
+    print("data shape is", image.shape)
+    print("mean dimension is", data['trainX'].mean(0).shape)
+    adjImg = image - data['trainX'].mean(0)
+    adjImg = adjImg.transpose()
     cov = np.dot(adjImg, adjImg.transpose()) / 470.0
-    # print(cov.shape)
-    # TODO: eig or svd
+    print("cov shape is",cov.shape)
     _, w, v = svd(cov)
-    print('E-value:', w**2)
-    # maxIndex = np.where(w.real == max(w.real))
-    # print(max(w.real))
-    # print(maxIndex)
-    # print('E-vector', v.real.shape)
+    print('E-value:', w)
+    w = w**2
     v = v.real
-    print(type(v[0]))
-    for i in range(10):
-        print(type(w[i]))
+    eigenVal = []
+    for i in range(w.size):
+        eigenVal.append(w[i])
+    plt.plot(eigenVal)
+    plt.show()
 
     fig, axs = plt.subplots(1, 10)
     for i in range(10):
         axs[i].imshow(v[i].reshape((28,28)), cmap='gray')
-    # plt.imshow(v[0].reshape((28,28)), cmap='gray')
     plt.show()
