@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from numpy import linalg
 import math
 
-def energy(label, beta, image, sig):
+def energy(label, beta, image, sig, dataSize):
     # firstPart = label - 1
     # secondPart = math.exp(-1 * np.dot(image, beta)) / (1 + math.exp(-1 * np.dot(image, beta)))
     # thirdPart = beta / sigma
@@ -13,7 +13,7 @@ def energy(label, beta, image, sig):
 
     for p in range(785):
         sum = 0
-        for i in range(85):
+        for i in range(dataSize):
             sum = sum + ((1 - label[i]) - math.exp(-1 * np.dot(image[i], beta))
                   / (1 + math.exp(-1 * np.dot(image[i], beta)))) * image[i][p]
         sum = sum + beta[p] / sig
@@ -42,14 +42,18 @@ if __name__ == '__main__':
     filterData = []
     filterLabel = []
     for idx, x in enumerate(label):
-        if x == 0 or x == 1:
+        if x == 6 or x == 8:
             print(image[idx])
             # input()
             newImg = np.append(image[idx], 1)
             # print(newImg)
             # input()
             filterData.append(newImg)
-            filterLabel.append(x)
+            if x == 6:
+                mLabel = 0
+            else:
+                mLabel = 1
+            filterLabel.append(mLabel)
     filterData = np.array(filterData)
     filterLabel = np.array(filterLabel)
     print("filtered data size is", filterData.shape)
@@ -64,7 +68,7 @@ if __name__ == '__main__':
     sig = 1
 
     for iter in range(50):
-        beta = beta - stepsize * energy(filterLabel, beta, filterData, sig)
+        beta = beta - stepsize * energy(filterLabel, beta, filterData, sig, filterData.shape[0])
         print(np.linalg.norm(beta))
 
     # predict
@@ -79,19 +83,23 @@ if __name__ == '__main__':
     filterTestData = []
     filterTestLabel = []
     for idx, x in enumerate(testLabel):
-        if x == 0 or x == 1:
+        if x == 6 or x == 8:
             print(testImage[idx])
             # input()
             newImg = np.append(testImage[idx], 1)
             # print(newImg)
             # input()
             filterTestData.append(newImg)
-            filterTestLabel.append(x)
+            if x == 6:
+                mLabel = 0
+            else:
+                mLabel = 1
+            filterTestLabel.append(mLabel)
     filterTestData = np.array(filterTestData)
     filterTestLabel = np.array(filterTestLabel)
 
     acc = 0
-    for i in range(115):
+    for i in range(filterTestData.shape[0]):
         l = 1 / (1 + math.exp(-1 * np.dot(filterTestData[i], beta)))
         if l > 0.5:
             l = 1
