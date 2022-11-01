@@ -111,9 +111,11 @@ if __name__ == '__main__':
     filterTestData = np.array(filterTestData)
     filterTestLabel = np.array(filterTestLabel)
 
+    pcaTestData = np.dot(filterTestData, pcaVec.T)
+
     acc = 0
     for i in range(115):
-        l = 1 / (1 + math.exp(-1 * np.dot(filterTestData[i], beta)))
+        l = 1 / (1 + math.exp(-1 * np.dot(pcaTestData[i], beta)))
         if l > 0.5:
             l = 1
         else:
