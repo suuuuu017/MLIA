@@ -36,7 +36,7 @@ if __name__ == '__main__':
     print(image.shape)
 
     # pca element number
-    pcaN = 10
+    pcaN = 30
 
     # flatten the label
     label = np.squeeze(label)
@@ -82,9 +82,9 @@ if __name__ == '__main__':
     stepsize = 0.01
 
     # TODO: what should sigma be
-    sig = 1
+    sig = 4
 
-    for iter in range(50):
+    for iter in range(40):
         beta = beta - stepsize * energy(filterLabel, beta, pcaImg, sig, pcaN)
         print(np.linalg.norm(beta))
 

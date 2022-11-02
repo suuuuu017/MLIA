@@ -3,6 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy import linalg
 import math
+import cv2
+import random
 
 def energy(label, beta, image, sig, dataSize):
     # firstPart = label - 1
@@ -41,22 +43,94 @@ if __name__ == '__main__':
     # filter out 0,1 data and label
     filterData = []
     filterLabel = []
+
     for idx, x in enumerate(label):
         if x == 6 or x == 8:
-            print(image[idx])
-            # input()
             newImg = np.append(image[idx], 1)
-            # print(newImg)
-            # input()
             filterData.append(newImg)
+
             if x == 6:
                 mLabel = 0
             else:
                 mLabel = 1
             filterLabel.append(mLabel)
+    # filterLabel = np.array(filterLabel)
+    # filterData = np.array(filterData)
+
+    # len = filterLabel.shape[0]
+    len = len(filterLabel)
+    s = math.ceil(600/len)
+
+    augLabel = []
+    augData = []
+    for idx, x in enumerate(label):
+        if x == 6 or x == 8:
+            # print(image[idx])
+
+            # data augmentation
+            plainimage = image[idx].reshape((28, 28))
+            # print(plainimage.shape)
+            # plt.imshow(plainimage, cmap='gray')
+            # plt.show()
+
+            for i in range(s):
+                center = (14, 14)
+
+                ang = random.randint(0, 60)
+                # ang = 0
+
+                rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=ang, scale=1)
+                rotated_image = cv2.warpAffine(src=plainimage, M=rotate_matrix, dsize=(28, 28))
+                # plt.imshow(rotated_image, cmap='gray')
+                # plt.show()
+
+                tx, ty = random.randint(-5, 5), random.randint(-5, 5)
+                # TODO: someting wrong with translation
+                # tx, ty = 0, 0
+                translation_matrix = np.array([
+                    [1, 0, tx],
+                    [0, 1, ty]
+                ], dtype=np.float32)
+                translated_image = cv2.warpAffine(src=rotated_image, M=translation_matrix, dsize=(28, 28))
+                # plt.imshow(translated_image, cmap='gray')
+                # plt.show()
+                augimage = translated_image.reshape((1, 784))
+                newImg = np.append(augimage, 1)
+
+                augData.append(newImg)
+
+
+                if x == 6:
+                    mLabel = 0
+                else:
+                    mLabel = 1
+
+                augLabel.append(mLabel)
+                print(mLabel)
+
+    augData = np.array(augData)
+    augLabel = np.array(augLabel)
+
+    list1 = []
+    list2 = []
+    c = list(zip(augData, augLabel))
+
+    sampleN = 600
+    for a, b in random.sample(c, sampleN - len):
+        filterData.append(a)
+        filterLabel.append(b)
+
+    # list1 = np.array(list1)
+    # list2 = np.array(list2)
+
     filterData = np.array(filterData)
     filterLabel = np.array(filterLabel)
+
+
+
     print("filtered data size is", filterData.shape)
+    print("augLabel is", filterLabel.shape)
+    input()
 
     # gradient descent
     beta = np.random.rand(785, 1)
@@ -65,11 +139,15 @@ if __name__ == '__main__':
     stepsize = 0.01
 
     # TODO: what should sigma be
-    sig = 1
+    # sig = 1
+    sig = 4 # for 600 data
 
-    for iter in range(50):
+    for iter in range(150):
+        oldNorm = np.linalg.norm(beta)
         beta = beta - stepsize * energy(filterLabel, beta, filterData, sig, filterData.shape[0])
         print(np.linalg.norm(beta))
+        # if oldNorm < np.linalg.norm(beta):
+        #     break
 
     # predict
     testImage = data['testX']
@@ -84,7 +162,7 @@ if __name__ == '__main__':
     filterTestLabel = []
     for idx, x in enumerate(testLabel):
         if x == 6 or x == 8:
-            print(testImage[idx])
+            # print(testImage[idx])
             # input()
             newImg = np.append(testImage[idx], 1)
             # print(newImg)

@@ -3,6 +3,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy import linalg
 import math
+import time
+
+time1 = time.time()
+time2 = time.time()
+
 
 def energy(label, beta, image, sig):
     # firstPart = label - 1
@@ -58,14 +63,17 @@ if __name__ == '__main__':
     beta = np.random.rand(785, 1)
     # print(beta)
 
-    stepsize = 0.01
+    stepsize = 0.1
 
     # TODO: what should sigma be
-    sig = 1
+    sig = 4
 
-    for iter in range(50):
+    while True:
+        d = energy(filterLabel, beta, filterData, sig)
+        if np.linalg.norm(d) < 0.1:
+            break
         beta = beta - stepsize * energy(filterLabel, beta, filterData, sig)
-        print(np.linalg.norm(beta))
+        print(np.linalg.norm(d))
 
     # predict
     testImage = data['testX']
