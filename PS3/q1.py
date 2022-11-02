@@ -3,10 +3,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy import linalg
 import math
-import time
-
-time1 = time.time()
-time2 = time.time()
 
 
 def energy(label, beta, image, sig):
@@ -34,7 +30,7 @@ if __name__ == '__main__':
     # the keys and values in data dict
     for key, _ in data.items():
         print(key)
-    input()
+    # input()
     image = data['trainX']
     label = data['trainY']
     print(image.shape)

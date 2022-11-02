@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # the keys and values in data dict
     for key, _ in data.items():
         print(key)
-    input()
+    # input()
     image = data['trainX']
     label = data['trainY']
     print(image.shape)

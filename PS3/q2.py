@@ -5,6 +5,8 @@ from numpy import linalg
 import math
 from numpy.linalg import svd
 
+import time
+
 def energy(label, beta, image, sig, pcaN):
     # firstPart = label - 1
     # secondPart = math.exp(-1 * np.dot(image, beta)) / (1 + math.exp(-1 * np.dot(image, beta)))
@@ -30,13 +32,13 @@ if __name__ == '__main__':
     # the keys and values in data dict
     for key, _ in data.items():
         print(key)
-    input()
+    # input()
     image = data['trainX']
     label = data['trainY']
     print(image.shape)
 
     # pca element number
-    pcaN = 30
+    pcaN = 10
 
     # flatten the label
     label = np.squeeze(label)
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     filterData = np.array(filterData)
     filterLabel = np.array(filterLabel)
     print("filtered data size is", filterData.shape)
-    input()
+    # input()
 
     adjData = filterData - filterData.mean(0)
     adjData = adjData.transpose()
@@ -65,15 +67,15 @@ if __name__ == '__main__':
     _, w, v = svd(cov)
     v = v.real
     print("eigen vector size is", v.shape)
-    input()
+    # input()
 
     pcaVec = v[0:pcaN, :]
     print("pcaVec size is", pcaVec.shape)
-    input()
+    # input()
 
     pcaImg = np.dot(filterData, pcaVec.T)
     print("pca Img size is", pcaImg.shape)
-    input()
+    # input()
 
     # gradient descent
     beta = np.random.rand(pcaN, 1)
@@ -84,9 +86,14 @@ if __name__ == '__main__':
     # TODO: what should sigma be
     sig = 4
 
+    time1 = time.time()
+
     for iter in range(40):
         beta = beta - stepsize * energy(filterLabel, beta, pcaImg, sig, pcaN)
-        print(np.linalg.norm(beta))
+        # print(np.linalg.norm(beta))
+
+    time2 = time.time()
+    print("running time is ", time2 - time1)
 
     # predict
     testImage = data['testX']

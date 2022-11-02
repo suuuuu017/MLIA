@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # the keys and values in data dict
     for key, _ in data.items():
         print(key)
-    input()
+    # input()
     image = data['trainX']
     label = data['trainY']
     print(image.shape)
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     print("filtered data size is", filterData.shape)
     print("augLabel is", filterLabel.shape)
-    input()
+    # input()
 
     # gradient descent
     beta = np.random.rand(785, 1)
