@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # print("cov shape is",cov.shape)
     _, w, v = svd(cov)
     # print('E-value:', w)
-    w = w**2
+    w = w
     v = v.real
     eigenVal = []
     runningSum = []
